@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-%na@m9&uy)%lyhcr0!goz%7t1h_qraz-08yr!9t#(d!g0q$3l!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 添加域名访问
+ALLOWED_HOSTS = ['127.0.0.1', 'www.shop.com']
 
 
 # Application definition
