@@ -54,8 +54,7 @@ ROOT_URLCONF = 'meiduo_mall.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -147,3 +146,45 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False, # 是否禁用已经存在的日志器
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(lineno)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(module)s %(lineno)d %(message)s'
+        }
+    },
+    'filters': { # 对日志进行过滤
+        'require_debug_true': { # django在debug模式下才输出日志
+            '()': 'django.utils.log.RequireDebugTrue',
+        }
+    },
+    'handlers': { # 日志处理方法
+        'console': { # 在终端输出日志
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+            'filters': ['require_debug_true'],
+        },
+        'file': { # 在文件中输出日志
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'meiduo.log', # 输出文件位置
+            'maxBytes': 1024 * 1024 * 10,
+            'backupCount': 10,
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': { # 日志器
+        'django': { # 定义了一个名为 django 的日志器
+            'handlers': ['console', 'file'], # 可以同时向中断与文件中输出日志
+            'propagate': True, # 是否继续传递日志信息
+            'level': 'INFO', # 日志器接受的最低日志级别
+        }
+    }
+}
