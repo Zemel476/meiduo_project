@@ -38,10 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders', # 注册跨域 CORS
     'apps.users.apps.UsersConfig'  # 注册子应用
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # CORS 注册跨域，要放在最上面
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -191,5 +193,14 @@ LOGGING = {
     }
 }
 
-
+# 设置一个自定义User模型，Django允许你覆盖默认的User模型
 AUTH_USER_MODEL = 'users.User'
+
+# CORS 跨域白名单设置
+# CORS 配置是后端告诉浏览器哪些前端来源被允许访问本后端资源
+CORS_ALLOWED_ORIGINS  = [
+    'http://127.0.0.1:8080',
+    'http://localhost:8080',
+    'http://www.meiduo.site:8080',
+]
+CORS_ALLOW_CREDENTIALS = True # 允许在跨域的时候携带cookie信息
