@@ -7,7 +7,11 @@
 from django.urls import path
 
 from apps.users.views import UsernameCountView
+from django.urls import register_converter
 
+from utils.converters import UsernameConverter
+
+register_converter(UsernameConverter, 'username')
 urlpatterns = [
-    path('username/<username>', UsernameCountView.as_view(), name='username'),
+    path('username/<username:username>/<int:count>', UsernameCountView.as_view(), name='username'),
 ]

@@ -8,7 +8,7 @@ from apps.users.models import User
 
 class UsernameCountView(View):
 
-    def get(self, request, username):
+    def get(self, request, username, count):
         count = User.objects.filter(username=username).count()
 
         return JsonResponse({'count':count, 'code':200, 'errmsg': ''})
