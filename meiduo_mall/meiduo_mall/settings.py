@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders', # 注册跨域 CORS
-    'apps.users.apps.UsersConfig'  # 注册子应用
+    'apps.users.apps.UsersConfig',
+    'apps.verifications.apps.VerificationsConfig'  # 注册子应用
 ]
 
 MIDDLEWARE = [
