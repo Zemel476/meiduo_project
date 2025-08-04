@@ -13,5 +13,5 @@ from utils.converters import UsernameConverter
 
 register_converter(UsernameConverter, 'username')
 urlpatterns = [
-    path('username/<username:username>/<int:count>', UsernameCountView.as_view(), name='username'),
+    path('usernames/<username:username>/<count>/', UsernameCountView.as_view(), name='username'),
 ]

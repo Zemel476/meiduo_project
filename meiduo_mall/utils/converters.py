@@ -4,7 +4,7 @@
 # @File    : converters.py
 # @Software: PyCharm
 class UsernameConverter:
-    regex = "[a-zA-Z0-9_-]{3,16}"
+    regex = "[a-zA-Z]{5,16}"
 
     def to_python(self, value):
         return value
