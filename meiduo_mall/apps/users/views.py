@@ -1,6 +1,7 @@
 import json
 import re
 
+from django.contrib.auth import login
 from django.http import JsonResponse
 from django.views import View
 
@@ -46,7 +47,13 @@ class RegisterView(View):
             return JsonResponse({'code': 400, 'msg': '参数异常5'})
 
         # 使用 create_user 这里密码会加密
-        User.objects.create_user(username=username, password=str(password), mobile=mobile)
+        user = User.objects.create_user(username=username, password=str(password), mobile=mobile)
+        # 注册 保持登录
+        # 方法1
+        # request.session['user'] = user.id
+
+        # 方法2 django 提供的状态保持方案
+        login(request, user)
 
         return JsonResponse({'code': 0, 'msg': 'ok'})
 
