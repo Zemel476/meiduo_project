@@ -6,7 +6,7 @@
 
 from django.urls import path
 
-from apps.users.views import UsernameCountView
+from apps.users.views import UsernameCountView, RegisterView
 from django.urls import register_converter
 
 from utils.converters import UsernameConverter
@@ -14,4 +14,5 @@ from utils.converters import UsernameConverter
 register_converter(UsernameConverter, 'username')
 urlpatterns = [
     path('usernames/<username:username>/<count>/', UsernameCountView.as_view(), name='username'),
+    path('registers/', RegisterView.as_view(), name='register'),
 ]
