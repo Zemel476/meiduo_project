@@ -129,8 +129,8 @@ class Captcha(object):
         char_images = []
         for c in self._text:
             font = random.choice(fonts)
-            c_width, c_height = draw.textsize(c, font=font)
-            char_image = Image.new('RGB', (c_width, c_height), (0, 0, 0))
+            # 设置验证码大小
+            char_image = Image.new('RGB', (400, 200), (0, 0, 0))
             char_draw = Draw(char_image)
             char_draw.text((0, 0), c, font=font, fill=color)
             char_image = char_image.crop(char_image.getbbox())
