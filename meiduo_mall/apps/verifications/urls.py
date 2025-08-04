@@ -5,9 +5,13 @@
 # @Software: PyCharm
 
 from django.urls import path
+from django.urls.converters import register_converter
+from apps.verifications.views import ImageCodeView, SmsCodeView
+from utils.converters import MobileConverter
 
-from apps.verifications.views import ImageCodeView
+register_converter(MobileConverter, 'mobile')
 
 urlpatterns = [
     path('image_codes/<uuid>/', ImageCodeView.as_view(), name='image_code'),
+    path('sms_codes/<mobile:mobile>/', SmsCodeView.as_view(), name='sms_code'),
 ]
