@@ -38,11 +38,22 @@ class SmsCodeView(View):
         # if not redis_image_code or redis_image_code.upper() != image_code.upper():
         #     return JsonResponse({'code': 400, 'msg': '图片验证码有误'})
 
+        # 避免频繁发送验证码
+        send_flag = redis_cli.get(f'send_flag_{mobile}')
+        if not send_flag:
+            return JsonResponse({'code': 400, 'msg': '不要频繁发送短信'})
+
         # 生成4位短信验证码
         sms_code = '%04d' % random.randint(0, 9999)
-        print(sms_code)
+
+        # 添加管道，使用管道收集指令
+        pipeline = redis_cli.pipeline()
         # 保存短信验证码
-        redis_cli.setex(mobile, 60, sms_code)
+        pipeline.setex(mobile, 60, sms_code)
+        # 设置短信标记
+        pipeline.setex(f'send_flag_{mobile}', 60, 1)
+        # 执行指令
+        pipeline.execute()
 
         json_result = self._send_sms(mobile, sms_code)
         if json_result['statusCode'] != '000000':
