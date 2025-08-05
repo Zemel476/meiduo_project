@@ -70,7 +70,7 @@ class LoginView(View):
         if not all([username, password]) or not re.match(r'^[a-zA-Z0-9]{5,16}', username):
             return JsonResponse({'code': 400, 'msg': '账号或密码有误！'})
 
-        if not re.match(r'1[3-9]\d{9}]', str(username)):
+        if re.match(r'1[3-9]\d{9}]', str(username)):
             User.USERNAME_FIELD = 'mobile'
         else:
             User.USERNAME_FIELD = 'username'
@@ -88,6 +88,8 @@ class LoginView(View):
         else:
             request.session.set_expiry(0)
 
+        response = JsonResponse({'code': 0, 'msg': 'ok'})
+        response.set_cookie('username', user.username, max_age=3600*12)
 
-        return JsonResponse({'code': 0, 'msg': 'ok'})
+        return response
 
