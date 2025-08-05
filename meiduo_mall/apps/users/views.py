@@ -1,7 +1,7 @@
 import json
 import re
 
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.http import JsonResponse
 from django.views import View
 
@@ -54,6 +54,40 @@ class RegisterView(View):
 
         # 方法2 django 提供的状态保持方案
         login(request, user)
+
+        return JsonResponse({'code': 0, 'msg': 'ok'})
+
+
+
+class LoginView(View):
+
+    def post(self, request):
+        request_data = json.loads(request.body)
+        username = request_data.get('username')
+        password = request_data.get('password')
+        remember = request_data.get('remember')
+
+        if not all([username, password]) or not re.match(r'^[a-zA-Z0-9]{5,16}', username):
+            return JsonResponse({'code': 400, 'msg': '账号或密码有误！'})
+
+        if not re.match(r'1[3-9]\d{9}]', str(username)):
+            User.USERNAME_FIELD = 'mobile'
+        else:
+            User.USERNAME_FIELD = 'username'
+
+        # django 提供用户登录功能
+        user = authenticate(username=username, password=password)
+        if not user:
+            return JsonResponse({'code': 400, 'msg': '账号或密码有误！'})
+
+        # 设置用户登录状态 session
+        login(request, user)
+        # 设置用户session保存时间
+        if remember:
+            request.session.set_expiry(3600*12)
+        else:
+            request.session.set_expiry(0)
+
 
         return JsonResponse({'code': 0, 'msg': 'ok'})
 
