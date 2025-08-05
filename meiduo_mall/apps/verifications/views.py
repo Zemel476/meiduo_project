@@ -1,9 +1,8 @@
-import json
 import random
 
 from django.http import HttpResponse, JsonResponse
 from django.views import View
-from ronglian_sms_sdk import SmsSDK
+from celery_tasks.sms.tasks import celery_send_sms_code
 
 from libs.captcha.captcha import captcha
 from django_redis import get_redis_connection
@@ -40,7 +39,7 @@ class SmsCodeView(View):
 
         # 避免频繁发送验证码
         send_flag = redis_cli.get(f'send_flag_{mobile}')
-        if not send_flag:
+        if send_flag:
             return JsonResponse({'code': 400, 'msg': '不要频繁发送短信'})
 
         # 生成4位短信验证码
@@ -55,17 +54,10 @@ class SmsCodeView(View):
         # 执行指令
         pipeline.execute()
 
-        json_result = self._send_sms(mobile, sms_code)
-        if json_result['statusCode'] != '000000':
-            return JsonResponse({'code': 400, 'msg': '短信发送失败！'})
+        # 使用celery实现短信异步生成
+        # delay参数等用任务参数
+        celery_send_sms_code.delay(mobile, sms_code, 60)
 
         return JsonResponse({'code': 0, 'msg': '短信发送成功！'})
 
-    @staticmethod
-    def _send_sms(mobile, sms_code):
-        acc_id = 'xxx'  # 容联云通讯分配的主账号ID
-        acc_token = 'xxx'  # 容联云通讯分配的主账号TOKEN
-        app_id = 'xxx'  # 容联云通讯分配的应用ID
 
-        result = SmsSDK(acc_id, acc_token, app_id).sendMessage('1', mobile, (sms_code, 1))
-        return json.loads(result)
