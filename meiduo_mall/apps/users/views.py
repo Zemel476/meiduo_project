@@ -1,7 +1,7 @@
 import json
 import re
 
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.http import JsonResponse
 from django.views import View
 
@@ -58,7 +58,6 @@ class RegisterView(View):
         return JsonResponse({'code': 0, 'msg': 'ok'})
 
 
-
 class LoginView(View):
 
     def post(self, request):
@@ -92,4 +91,17 @@ class LoginView(View):
         response.set_cookie('username', user.username, max_age=3600*12)
 
         return response
+
+
+class LogoutView(View):
+
+    def delete(self, request):
+        # 删除session
+        logout(request)
+
+        response = JsonResponse({'code': 0, 'msg': 'ok'})
+        response.delete_cookie('username')
+
+        return response
+
 
