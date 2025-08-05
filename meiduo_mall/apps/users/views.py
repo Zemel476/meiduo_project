@@ -2,10 +2,12 @@ import json
 import re
 
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.views import View
 
 from apps.users.models import User
+from utils.views import LoginRequiredJsonMixin
 
 
 # Create your views here.
@@ -103,5 +105,13 @@ class LogoutView(View):
         response.delete_cookie('username')
 
         return response
+
+# LoginRequiredMixin 是 Django 的一个 类视图（Class-Based View）辅助工具，
+# 用于强制用户必须登录才能访问某个视图。
+# 如果未登录用户尝试访问，会自动将其重定向到登录页面（或返回 403 错误）
+class CenterView(LoginRequiredJsonMixin, View):
+
+    def get(self, request):
+        return JsonResponse({'code': 0, 'msg': 'ok'})
 
 

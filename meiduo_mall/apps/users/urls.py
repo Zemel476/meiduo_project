@@ -6,7 +6,7 @@
 
 from django.urls import path
 
-from apps.users.views import UsernameCountView, RegisterView, LoginView, LogoutView
+from apps.users.views import UsernameCountView, RegisterView, LoginView, LogoutView, CenterView
 from django.urls import register_converter
 
 from utils.converters import UsernameConverter
@@ -17,4 +17,5 @@ urlpatterns = [
     path('registers/', RegisterView.as_view(), name='register'),
     path('authorizations/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='login'),
+    path('centers/', CenterView.as_view(), name='center'),
 ]
