@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders', # 注册跨域 CORS
     'apps.users.apps.UsersConfig',
-    'apps.verifications.apps.VerificationsConfig'  # 注册子应用
+    'apps.verifications.apps.VerificationsConfig',
+    'apps.oauth.apps.OauthConfig'  # 注册子应用
 ]
 
 MIDDLEWARE = [
