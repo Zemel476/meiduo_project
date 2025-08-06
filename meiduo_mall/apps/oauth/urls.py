@@ -5,9 +5,9 @@
 # @Software: PyCharm
 from django.urls import path
 
-from apps.oauth.views import QQLoginURLView
+from apps.oauth.views import QQLoginURLView, OathQQView
 
 urlpatterns = [
     path('qq/authorization/', QQLoginURLView.as_view(), name='qq_authorization'),
-    path('oauth_callback/', QQLoginURLView.as_view(), name='qq_login'),
+    path('oauth_callback/', OathQQView.as_view(), name='qq_login'),
 ]
