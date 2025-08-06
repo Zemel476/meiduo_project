@@ -214,3 +214,7 @@ CORS_ALLOWED_ORIGINS  = [
     'http://www.meiduo.site:8080',
 ]
 CORS_ALLOW_CREDENTIALS = True # 允许在跨域的时候携带cookie信息
+
+QQ_CLIENT_ID = None  # app id
+QQ_CLIENT_SECRET = None  # app secret
+REDIRECT_URL = None  # 用户登录后，跳转页面
