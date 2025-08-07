@@ -17,5 +17,5 @@ urlpatterns = [
     path('registers/', RegisterView.as_view(), name='register'),
     path('authorizations/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='login'),
-    path('centers/', CenterView.as_view(), name='center'),
+    path('infos/', CenterView.as_view(), name='center'),
 ]
