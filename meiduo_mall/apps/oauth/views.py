@@ -11,6 +11,8 @@ from django_redis import get_redis_connection
 from apps.oauth.models import OAuthQQUser
 from apps.users.models import User
 
+from utils.tokens import generate_reset_token, verify_reset_token
+
 
 # Create your views here.
 # 前端点击 qq 登录连接，发送请求给后端
@@ -47,7 +49,9 @@ class OathQQView(View):
         try:
             qq_user = OAuthQQUser.objects.get(openid=open_id)
         except OAuthQQUser.DoesNotExist:
-            return JsonResponse({'code': 200, 'msg': 'ok', 'access_token': open_id})
+            token = generate_reset_token(open_id)
+
+            return JsonResponse({'code': 200, 'msg': 'ok', 'access_token': token})
         else: # 如果用户已绑定，直接登录
             login(request, qq_user.user)
             response = JsonResponse({'code': 0, 'msg': 'ok'})
@@ -61,21 +65,18 @@ class OathQQView(View):
         mobile= json_data.get('mobile')
         password= json_data.get('password')
         sms_code= json_data.get('sms_code')
-        qq_code = json_data.get('qq_code')
         access_token = json_data.get('access_token')
 
         if not all([mobile, password, sms_code, access_token]):
             return JsonResponse({'code':400, 'msg':'数据异常！'})
 
+        open_id = verify_reset_token(access_token)
+        if not open_id:
+            return JsonResponse({'code':400, 'msg':'数据异常！'})
+
         redis_cli = get_redis_connection('code')
         if not redis_cli or sms_code != redis_cli.get('sms_code'):
             return JsonResponse({'code':400, 'msg':'短信验证码有误！'})
-
-        qq = OAuthQQ(settings.QQ_CLIENT_ID, settings.QQ_CLIENT_SECRET, settings.REDIRECT_URL, state='xxx')
-        qq_token = qq.get_access_token(qq_code)
-        open_id = qq.get_open_id(access_token=qq_token)
-        if open_id != access_token:
-            return JsonResponse({'code': 400, 'msg': '数据异常！'})
 
         with transaction.atomic():
             try:
@@ -88,7 +89,7 @@ class OathQQView(View):
                 if not user.check_password(password):
                     return JsonResponse({'code':400, 'msg':'您已注册该网站，请检查密码！'})
 
-            OAuthQQUser.objects.create(openid=access_token, user=user)
+            OAuthQQUser.objects.create(openid=open_id, user=user)
 
         login(request, user)
         response = JsonResponse({'code': 0, 'msg': 'ok'})
