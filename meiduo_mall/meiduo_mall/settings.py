@@ -215,6 +215,15 @@ CORS_ALLOWED_ORIGINS  = [
 ]
 CORS_ALLOW_CREDENTIALS = True # 允许在跨域的时候携带cookie信息
 
+# QQ 登录
 QQ_CLIENT_ID = None  # app id
 QQ_CLIENT_SECRET = None  # app secret
 REDIRECT_URL = None  # 用户登录后，跳转页面
+
+# 发送邮件
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'xxx'
+EMAIL_HOST_PASSWORD = 'xxx'
+EMAIL_FROM = 'xxx<EMAIL>'

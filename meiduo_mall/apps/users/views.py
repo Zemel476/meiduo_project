@@ -5,8 +5,10 @@ from django.contrib.auth import login, authenticate, logout
 from django.http import JsonResponse
 from django.views import View
 from django_redis import get_redis_connection
+from django.core.mail import send_mail
 
 from apps.users.models import User
+from meiduo_mall import settings
 from utils.views import LoginRequiredJsonMixin
 
 
@@ -127,3 +129,22 @@ class CenterView(LoginRequiredJsonMixin, View):
         return JsonResponse({'code': 0, 'msg': 'ok', 'data': info_data})
 
 
+class EmailView(View):
+
+    def put(self, request):
+        json_data = json.loads(request.body)
+        email = json_data.get('email')
+
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            return JsonResponse({'code': 400, 'msg': '邮箱格式错误!'})
+
+        request.user.email = email
+        request.user.save()
+
+        subject = 'subject'
+        message = 'message'
+        from_email = settings.EMAIL_HOST_USER
+        target_email = ['xxx']
+        send_mail(subject, message, from_email, target_email)
+
+        return JsonResponse({'code': 0, 'msg': 'ok'})
