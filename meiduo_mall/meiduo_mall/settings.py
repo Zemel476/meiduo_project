@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'corsheaders', # 注册跨域 CORS
     'apps.users.apps.UsersConfig',
     'apps.verifications.apps.VerificationsConfig',
-    'apps.oauth.apps.OauthConfig'  # 注册子应用
+    'apps.oauth.apps.OauthConfig',
+    'apps.areas.apps.AreasConfig'  # 注册子应用
 ]
 
 MIDDLEWARE = [
