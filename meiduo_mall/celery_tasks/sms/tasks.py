@@ -13,8 +13,8 @@ from celery_tasks.main import app
 
 @app.task
 def celery_send_sms_code(mobile, sms_code, expire_time):
-    acc_id = '2c94811c9860a9c4019874ffeacb0415'  # 容联云通讯分配的主账号ID
-    acc_token = 'c575b20665dc4107ae18e7d68230718f'  # 容联云通讯分配的主账号TOKEN
-    app_id = '2c94811c9860a9c4019875058e470421'  # 容联云通讯分配的应用ID
+    acc_id = 'xxx'  # 容联云通讯分配的主账号ID
+    acc_token = 'xxxx'  # 容联云通讯分配的主账号TOKEN
+    app_id = 'xxx'  # 容联云通讯分配的应用ID
 
     SmsSDK(acc_id, acc_token, app_id).sendMessage('1', mobile, (sms_code, expire_time))

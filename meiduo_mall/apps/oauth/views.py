@@ -11,7 +11,7 @@ from django_redis import get_redis_connection
 from apps.oauth.models import OAuthQQUser
 from apps.users.models import User
 
-from utils.tokens import generate_reset_token, verify_reset_token
+from utils.tokens import encrypt_with_expiry, decrypt_with_expiry
 
 
 # Create your views here.
@@ -49,7 +49,7 @@ class OathQQView(View):
         try:
             qq_user = OAuthQQUser.objects.get(openid=open_id)
         except OAuthQQUser.DoesNotExist:
-            token = generate_reset_token(open_id)
+            token = encrypt_with_expiry(open_id)
 
             return JsonResponse({'code': 200, 'msg': 'ok', 'access_token': token})
         else: # 如果用户已绑定，直接登录
@@ -70,7 +70,7 @@ class OathQQView(View):
         if not all([mobile, password, sms_code, access_token]):
             return JsonResponse({'code':400, 'msg':'数据异常！'})
 
-        open_id = verify_reset_token(access_token)
+        open_id = decrypt_with_expiry(access_token)
         if not open_id:
             return JsonResponse({'code':400, 'msg':'数据异常！'})
 

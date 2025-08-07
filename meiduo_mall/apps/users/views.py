@@ -5,10 +5,12 @@ from django.contrib.auth import login, authenticate, logout
 from django.http import JsonResponse
 from django.views import View
 from django_redis import get_redis_connection
-from django.core.mail import send_mail
+from django.db import transaction
 
 from apps.users.models import User
+from celery_tasks.email.tasks import celery_send_mail
 from meiduo_mall import settings
+from utils.tokens import encrypt_with_expiry, decrypt_with_expiry
 from utils.views import LoginRequiredJsonMixin
 
 
@@ -141,10 +143,39 @@ class EmailView(View):
         request.user.email = email
         request.user.save()
 
-        subject = 'subject'
-        message = 'message'
-        from_email = settings.EMAIL_HOST_USER
+        # 发送邮件
+        from_email = settings.EMAIL_FROM
         target_email = ['xxx']
-        send_mail(subject, message, from_email, target_email)
+        # 邮件内容
+        subject = 'subject'
+        # 加密跳转链接
+        text_content = 'httP://127.0.0.1:8000/success_verify_email.html?token={}'.format(encrypt_with_expiry({'username': request.user.username, 'email': email}, 3600*24))
+
+        celery_send_mail.delay(from_email, target_email, subject, text_content)
 
         return JsonResponse({'code': 0, 'msg': 'ok'})
+
+
+class EmailVerifyView(View):
+
+    def put(self, request):
+        token = request.GET.get('token')
+        if not token:
+            return JsonResponse({'code': 400, 'msg': '请求异常'})
+
+        user_dict = decrypt_with_expiry(token)
+        if not user_dict:
+            return JsonResponse({'code': 400, 'msg': '请求异常'})
+
+        try:
+            with transaction.atomic():
+                user = User.objects.get(username=user_dict['username'], email=user_dict['email'])
+
+                user.email_active = True
+                user.save()
+
+            return JsonResponse({'code': 0, 'msg': 'ok'})
+        except User.DoesNotExist:
+            return JsonResponse({'code': 400, 'msg': '请求异常'})
+
+

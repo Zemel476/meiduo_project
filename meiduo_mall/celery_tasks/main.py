@@ -18,7 +18,7 @@ app = Celery('celery_tasks')
 app.config_from_object('celery_tasks.config')
 
 # 需要celery 自动检测包的任务
-app.autodiscover_tasks(['celery_tasks.sms'])
+app.autodiscover_tasks(['celery_tasks.sms', 'celery_tasks.email'])
 
 
 # 启动消费任务， 在控制台执行命令

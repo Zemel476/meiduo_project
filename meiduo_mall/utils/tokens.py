@@ -3,21 +3,25 @@
 # @Author  : 老冰棍
 # @File    : tokens.py
 # @Software: PyCharm
-from itsdangerous import Serializer, BadData
+import datetime
+
+import jwt
 
 from meiduo_mall import settings
 
+def encrypt_with_expiry(data, expiry_seconds=5):
+    payload = {
+        'data': data,
+        'exp': datetime.datetime.now() + datetime.timedelta(seconds=expiry_seconds)
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
-def generate_reset_token(params):
-    serialize = Serializer(secret_key=settings.SECRET_KEY)
-    token = serialize.dumps(params)
-
-    return token
-
-
-def verify_reset_token(token):
-    serializer = Serializer(settings.SECRET_KEY)
+# 解密并验证是否过期
+def decrypt_with_expiry(token):
     try:
-        return serializer.loads(token)
-    except Exception:
-        return None
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        return payload['data']
+    except jwt.ExpiredSignatureError:
+        return "Token expired"
+    except jwt.InvalidTokenError:
+        return "Invalid token"

@@ -6,7 +6,8 @@
 
 from django.urls import path
 
-from apps.users.views import UsernameCountView, RegisterView, LoginView, LogoutView, CenterView, EmailView
+from apps.users.views import UsernameCountView, RegisterView, LoginView, LogoutView, CenterView, EmailView, \
+    EmailVerifyView
 from django.urls import register_converter
 
 from utils.converters import UsernameConverter
@@ -19,4 +20,5 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='login'),
     path('infos/', CenterView.as_view(), name='center'),
     path('emails/', EmailView.as_view(), name='email'),
+    path('emails/verifications/', EmailVerifyView.as_view(), name='email_verify'),
 ]
