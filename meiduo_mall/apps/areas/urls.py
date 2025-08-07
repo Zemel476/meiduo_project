@@ -3,6 +3,11 @@
 # @Author  : 老冰棍
 # @File    : urls.py
 # @Software: PyCharm
-urlpatterns = [
+from django.urls import path
 
+from apps.areas.views import AreaView,SubAreaView
+
+urlpatterns = [
+    path('areas/', AreaView.as_view(), name='areas'),
+    path('areas/<id>/', SubAreaView.as_view(), name='sub_areas'),
 ]
