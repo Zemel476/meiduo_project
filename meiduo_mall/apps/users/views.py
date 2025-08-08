@@ -7,7 +7,7 @@ from django.views import View
 from django_redis import get_redis_connection
 from django.db import transaction
 
-from apps.users.models import User
+from apps.users.models import User, Address
 from celery_tasks.email.tasks import celery_send_mail
 from meiduo_mall import settings
 from utils.tokens import encrypt_with_expiry, decrypt_with_expiry
@@ -179,3 +179,64 @@ class EmailVerifyView(View):
             return JsonResponse({'code': 400, 'msg': '请求异常'})
 
 
+
+class AddressView(LoginRequiredJsonMixin, View):
+
+    def get(self, request):
+        # 方法一：通过反向查询
+        addresses = request.user.addresses
+        # 方法二
+        # Address.objects.filter(user=request.user, is_deleted=False)
+
+        result = [address for address in addresses]
+
+        return JsonResponse({'code': 0, 'msg': 'ok', 'addresses': result})
+
+
+    def post(self, request):
+        print('address')
+        count = request.user.addresses.count()
+        if count > 20:
+            return JsonResponse({'code': 0, 'msg': '收件人地址已达上限'})
+
+        json_dict = json.loads(request.body)
+        receiver = json_dict.get('receiver')
+        province_id = json_dict.get('province_id')
+        city_id = json_dict.get('city_id')
+        district_id = json_dict.get('district_id')
+        place = json_dict.get('place')
+        mobile = json_dict.get('mobile')
+        tel = json_dict.get('tel')
+        email = json_dict.get('email')
+
+        try:
+            with transaction.atomic():
+                address = Address.objects.create(
+                    user=request.user,
+                    title=receiver,
+                    receiver=receiver,
+                    province_id=province_id,
+                    city_id=city_id,
+                    district_id=district_id,
+                    place=place,
+                    mobile=mobile,
+                    tel=tel,
+                    email=email
+                )
+        except Exception as e:
+            return JsonResponse({'code': 0, 'errmsg': '新增地址失败'})
+
+        address_dict = {
+            "id": address.id,
+            "title": address.title,
+            "receiver": address.receiver,
+            "province": address.province.name,
+            "city": address.city.name,
+            "district": address.district.name,
+            "place": address.place,
+            "mobile": address.mobile,
+            "tel": address.tel,
+            "email": address.email
+        }
+
+        return JsonResponse({'code': 0, 'data': address_dict})

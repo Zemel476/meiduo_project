@@ -12,4 +12,4 @@ from django.http import JsonResponse
 class LoginRequiredJsonMixin(LoginRequiredMixin):
 
     def handle_no_permission(self):
-        return JsonResponse({'code': 400, 'msg': ''})
+        return JsonResponse({'code': 400, 'msg': '账号未登录'})
