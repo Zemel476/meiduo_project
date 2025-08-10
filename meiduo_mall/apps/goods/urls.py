@@ -3,6 +3,10 @@
 # @Author  : 老冰棍
 # @File    : urls.py
 # @Software: PyCharm
-urlpatterns = [
+from django.urls import path
 
+from apps.goods.views import IndexView
+
+urlpatterns = [
+    path('index/', IndexView.as_view(), name='index'),
 ]
