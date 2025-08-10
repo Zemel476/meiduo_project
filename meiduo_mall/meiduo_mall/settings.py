@@ -230,3 +230,7 @@ EMAIL_PORT = 465
 EMAIL_HOST_USER = 'xxx'
 EMAIL_HOST_PASSWORD = 'xxx'
 EMAIL_FROM = 'xxx<EMAIL>'
+
+
+# 注册自定义文件存储类
+DEFAULT_FILE_STORAGE = 'utils.fastdfs.storage.StaticFilesStorage'
