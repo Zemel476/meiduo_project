@@ -1,0 +1,5 @@
+# 模板 指定字段
+# object 代表要检索的模型实例
+{{ object.name }}
+{{ object.caption }}
+{{ object.id }}

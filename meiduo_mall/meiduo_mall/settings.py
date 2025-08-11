@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders', # 注册跨域 CORS
+    'haystack', # 注册 haystack
     'apps.users.apps.UsersConfig',
     'apps.verifications.apps.VerificationsConfig',
     'apps.oauth.apps.OauthConfig',
@@ -234,3 +235,12 @@ EMAIL_FROM = 'xxx<EMAIL>'
 
 # 注册自定义文件存储类
 DEFAULT_FILE_STORAGE = 'utils.fastdfs.storage.StaticFilesStorage'
+
+# ES 配置
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://127.0.0.1:32768/',
+        'INDEX_NAME': 'haystack',
+    }
+}
