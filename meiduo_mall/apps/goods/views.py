@@ -1,12 +1,16 @@
+from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 
 from apps.contents.models import ContentCategory
-from utils.goods import get_categories
+from apps.goods.models import GoodsCategory, SKU
+from utils.goods import get_categories, get_breadcrumb
+from utils.views import LoginRequiredJsonMixin
 
 
 # Create your views here.
-class IndexView(View):
+class IndexView(LoginRequiredJsonMixin, View):
     def get(self, request):
         # 商品分类数据
         categories = get_categories()
@@ -19,3 +23,31 @@ class IndexView(View):
 
         # 数据模板化
         return render(request, 'index.html', {'contents': contents, 'categories': categories})
+
+
+class ListView(LoginRequiredJsonMixin, View):
+
+    def get(self, request, category_id):
+        ordering = request.GET.get('ordering')
+        page = request.GET.get('page')
+        page_size = request.GET.get('page_size')
+
+        try:
+            category = GoodsCategory.objects.get(id=category_id)
+        except GoodsCategory.DoesNotExist:
+            return JsonResponse({'code': 400, 'msg': ''})
+
+        # 获得面包屑数据
+        breadcrumb = get_breadcrumb(category)
+
+        # 查询分类对应sku数据，再排序
+        skus = SKU.objects.filter(category=category,is_launched=True).order_by(ordering).values('id', 'name', 'price','default_image')
+        # 分页
+        paginator = Paginator(skus, page_size)
+
+        page_skus = paginator.get_page(page)
+        result = []
+        for  sku in page_skus.object_list:
+            result.append(sku)
+
+        return JsonResponse({'code': 0, 'msg': '', 'result': result})
