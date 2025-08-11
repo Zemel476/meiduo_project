@@ -2,6 +2,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
+from haystack.views import SearchView
 
 from apps.contents.models import ContentCategory
 from apps.goods.models import GoodsCategory, SKU
@@ -51,3 +52,22 @@ class ListView(LoginRequiredJsonMixin, View):
             result.append(sku)
 
         return JsonResponse({'code': 0, 'msg': '', 'result': result})
+
+
+class SKUSearchView(LoginRequiredJsonMixin, SearchView):
+
+    def create_response(self):
+        # 获取搜索的结果
+        context = self.get_context()
+
+        sku_list = []
+        for item in context['page'].object_list:
+            sku_list.append({
+                'id': item.object.id,
+                'name': item.object.name,
+                'searchkey': context.get('query'),
+                'page_size': context['page'].paginator.num_pages,
+                'count': context['page'].paginator.count,
+            })
+
+        return JsonResponse(sku_list, safe=False)
