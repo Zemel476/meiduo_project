@@ -244,3 +244,5 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME': 'haystack',
     }
 }
+# 设置搜索每页返回记录条数
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 50
