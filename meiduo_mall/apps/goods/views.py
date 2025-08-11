@@ -6,7 +6,7 @@ from haystack.views import SearchView
 
 from apps.contents.models import ContentCategory
 from apps.goods.models import GoodsCategory, SKU
-from utils.goods import get_categories, get_breadcrumb
+from utils.goods import get_categories, get_breadcrumb, get_goods_specs
 from utils.views import LoginRequiredJsonMixin
 
 
@@ -71,3 +71,27 @@ class SKUSearchView(LoginRequiredJsonMixin, SearchView):
             })
 
         return JsonResponse(sku_list, safe=False)
+
+
+class DetailView(LoginRequiredJsonMixin, View):
+
+    def get(self, request, sku_id):
+        try:
+            sku = SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            return JsonResponse({'code': 400, 'msg': ''})
+        # 分类数据
+        categories = get_categories()
+        # 面包屑
+        breadcrumb = get_breadcrumb(sku.category)
+        # 规格信息
+        goods_specs = get_goods_specs(sku)
+
+        context = {
+            'sku': sku,
+            'goods_specs': goods_specs,
+            'categories': categories,
+            'breadcrumb': breadcrumb,
+        }
+
+        return render(request, 'detail.html', context)
