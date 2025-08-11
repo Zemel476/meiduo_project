@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os.path
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders', # 注册跨域 CORS
     'haystack', # 注册 haystack
+    'django_crontab', # 注册定时任务
     'apps.users.apps.UsersConfig',
     'apps.verifications.apps.VerificationsConfig',
     'apps.oauth.apps.OauthConfig',
@@ -246,3 +247,8 @@ HAYSTACK_CONNECTIONS = {
 }
 # 设置搜索每页返回记录条数
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 50
+
+# 配置定时任务
+CRONJOBS = [
+    ('0/5 * * * *', 'apps.contents.crons.generic_meiduo_index', '>>'+ os.path.join(BASE_DIR, 'logs/crontab.log')),
+]
