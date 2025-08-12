@@ -262,3 +262,13 @@ class UserHistoryView(LoginRequiredJsonMixin, View):
         redis_cli.ltrim(f'history:{request.user.id}', 0, 4)
 
         return JsonResponse({'code': 0, 'msg': 'ok'})
+
+    def get(self, request):
+        redis_cli = get_redis_connection('history')
+        sku_ids = redis_cli.lrange(f'history:{request.user.id}', 0, 4)
+
+        skus =SKU.objects.filter(pk__in=sku_ids).values('id', 'name', 'price')
+        result = [sku for sku in skus]
+
+        return JsonResponse({'code': 0, 'data': result})
+

@@ -22,5 +22,5 @@ urlpatterns = [
     path('emails/', EmailView.as_view(), name='email'),
     path('emails/verifications/', EmailVerifyView.as_view(), name='email_verify'),
     path('address/', AddressView.as_view(), name='address'),
-    path('userhistories/', UserHistoryView.as_view(), name='history'),
+    path('brower_history/', UserHistoryView.as_view(), name='history'),
 ]
