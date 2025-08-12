@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'apps.oauth.apps.OauthConfig',
     'apps.areas.apps.AreasConfig',
     'apps.goods.apps.GoodsConfig',
-    'apps.contents.apps.ContentsConfig'  # 注册子应用
+    'apps.contents.apps.ContentsConfig',
+    'apps.carts.apps.CartsConfig'  # 注册子应用
 ]
 
 MIDDLEWARE = [
@@ -124,6 +125,14 @@ CACHES = {
     'history': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://127.0.0.1:6379/3',
+        'OPTIONS': {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
+        }
+    },
+    'carts': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/4',
         'OPTIONS': {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
