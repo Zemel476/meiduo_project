@@ -7,6 +7,7 @@ from django.views import View
 from django_redis import get_redis_connection
 from django.db import transaction
 
+from apps.goods.models import SKU
 from apps.users.models import User, Address
 from celery_tasks.email.tasks import celery_send_mail
 from meiduo_mall import settings
@@ -240,3 +241,24 @@ class AddressView(LoginRequiredJsonMixin, View):
         }
 
         return JsonResponse({'code': 0, 'data': address_dict})
+
+
+class UserHistoryView(LoginRequiredJsonMixin, View):
+
+    def post(self, request):
+        json_data = json.loads(request.body)
+        sku_id = json_data.get('sku_id')
+
+        try:
+            SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            return JsonResponse({'code': 400, 'msg': '没有此商品'})
+
+        redis_cli = get_redis_connection('history')
+        # 删除旧数据
+        redis_cli.lrem(f'history:{request.user.id}', sku_id)
+        redis_cli.lpush(f'history:{request.user.id}', sku_id)
+        # 保留五条浏览记录
+        redis_cli.ltrim(f'history:{request.user.id}', 0, 4)
+
+        return JsonResponse({'code': 0, 'msg': 'ok'})
