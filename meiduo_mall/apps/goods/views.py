@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -5,7 +7,7 @@ from django.views import View
 from haystack.views import SearchView
 
 from apps.contents.models import ContentCategory
-from apps.goods.models import GoodsCategory, SKU
+from apps.goods.models import GoodsCategory, SKU, GoodsVisitCount
 from utils.goods import get_categories, get_breadcrumb, get_goods_specs
 from utils.views import LoginRequiredJsonMixin
 
@@ -95,3 +97,19 @@ class DetailView(LoginRequiredJsonMixin, View):
         }
 
         return render(request, 'detail.html', context)
+
+
+class CategoryVisitCountView(LoginRequiredJsonMixin, View):
+
+    def post(self, request, category_id):
+        try:
+            category = GoodsCategory.objects.get(id=category_id)
+        except GoodsCategory.DoesNotExist:
+            return JsonResponse({'code': 400, 'msg': ''})
+
+        # 不存在创建新的为 True 已存在为 False
+        gvc, bl = GoodsVisitCount.objects.get_or_create(category=category, date=date.today())
+        gvc.count+=1
+        gvc.save()
+
+        return JsonResponse({'code': 0, 'msg': ''})
