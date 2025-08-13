@@ -1,13 +1,14 @@
 import json
 from decimal import Decimal
 
+from django.db import transaction
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views import View
 from django_redis import get_redis_connection
 
 from apps.goods.models import SKU
-from apps.orders.models import OrderInfo
+from apps.orders.models import OrderInfo, OrderGoods
 from apps.users.models import Address
 from utils.views import LoginRequiredJsonMixin
 
@@ -78,14 +79,61 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
         total_amount = Decimal('0.00')
         freight = Decimal('10.00')
 
-        OrderInfo.objects.create(
-            order_id=order_id,
-            user=user,
-            address=address,
-            pay_method=pay_method,
-            status=pay_status,
-            total_count=total_count,
-            total_amount=total_amount,
-            freight=freight,
-        )
+        with transaction.atomic():
+            # 生成订单基本信息
+            order_info = OrderInfo.objects.create(
+                order_id=order_id,
+                user=user,
+                address=address,
+                pay_method=pay_method,
+                status=pay_status,
+                total_count=total_count,
+                total_amount=total_amount,
+                freight=freight,
+            )
 
+            # 从redis中取出已勾选商品信息
+            redis_cli = get_redis_connection('carts')
+            sku_id_counts = redis_cli.hgetall(f'carts:{user.id}')
+
+            selected_ids = redis_cli.smembers(f'selected:{user.id}')
+
+            carts = {}
+            for sku_id in selected_ids:
+                carts[int(sku_id)] = int(sku_id_counts.get(sku_id))
+
+            # 取出商品信息 校验商品数量，进行商品加总
+            skus = SKU.objects.filter(pk__in=carts.keys())
+            for sku in skus:
+                count = carts.get(sku.id)
+                if sku.stock < count:
+                    return JsonResponse({'code': 400, 'msg':'商品数量不足！'})
+
+                sku.stock -= count
+                sku.sales += count
+                sku.save()
+
+                order_info.total_count += count
+                order_info.total_amount += (count * sku.price)
+
+                # 保留订单商品信息
+                OrderGoods.objects.create(
+                    order=order_info,
+                    sku=sku,
+                    count=count,
+                    price=sku.price,
+                )
+
+            order_info.total_amount += freight
+            order_info.save()
+
+        sku_id_counts.pop(*selected_ids)
+
+        pipeline = redis_cli.pipeline()
+        pipeline.hdel(f'carts:{user.id}')
+        pipeline.hset(f'carts:{user.id}', sku_id_counts)
+
+        pipeline.srem(f'selected:{user.id}')
+        pipeline.execute()
+
+        return JsonResponse({'code': 0, 'msg': 'ok', 'order_id': order_id})
