@@ -80,6 +80,9 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
         freight = Decimal('10.00')
 
         with transaction.atomic():
+            # 设置事务回滚点
+            point = transaction.savepoint()
+
             # 生成订单基本信息
             order_info = OrderInfo.objects.create(
                 order_id=order_id,
@@ -107,6 +110,8 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
             for sku in skus:
                 count = carts.get(sku.id)
                 if sku.stock < count:
+                    # 回滚点
+                    transaction.savepoint_rollback(point)
                     return JsonResponse({'code': 400, 'msg':'商品数量不足！'})
 
                 sku.stock -= count
@@ -127,13 +132,11 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
             order_info.total_amount += freight
             order_info.save()
 
-        sku_id_counts.pop(*selected_ids)
-
+        # 清除redis 已勾选商品信息
         pipeline = redis_cli.pipeline()
-        pipeline.hdel(f'carts:{user.id}')
-        pipeline.hset(f'carts:{user.id}', sku_id_counts)
+        pipeline.hdel(f'carts:{user.id}', *selected_ids)
 
-        pipeline.srem(f'selected:{user.id}')
+        pipeline.srem(f'selected:{user.id}', *selected_ids)
         pipeline.execute()
 
         return JsonResponse({'code': 0, 'msg': 'ok', 'order_id': order_id})
