@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'apps.areas.apps.AreasConfig',
     'apps.goods.apps.GoodsConfig',
     'apps.contents.apps.ContentsConfig',
-    'apps.carts.apps.CartsConfig'  # 注册子应用
+    'apps.carts.apps.CartsConfig',
+    'apps.orders.apps.OrdersConfig'  # 注册子应用
 ]
 
 MIDDLEWARE = [
