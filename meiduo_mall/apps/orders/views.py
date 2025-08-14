@@ -114,9 +114,15 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
                     transaction.savepoint_rollback(point)
                     return JsonResponse({'code': 400, 'msg':'商品数量不足！'})
 
+                old_stock = sku.stock
+
                 sku.stock -= count
                 sku.sales += count
-                sku.save()
+                # 乐观锁，防止超卖
+                result = SKU.objects.filter(id=sku.id, stock=old_stock).update(stock=sku.stock, sales=sku.sales)
+                if not result:
+                    transaction.savepoint_rollback(point)
+                    return JsonResponse({'code':400, 'msg': '下单失败'})
 
                 order_info.total_count += count
                 order_info.total_amount += (count * sku.price)
