@@ -1,4 +1,5 @@
 import json
+import time
 from decimal import Decimal
 
 from django.db import transaction
@@ -107,33 +108,36 @@ class OrderCommitView(LoginRequiredJsonMixin, View):
 
             # 取出商品信息 校验商品数量，进行商品加总
             skus = SKU.objects.filter(pk__in=carts.keys())
+            # 下单失败多循环几次
             for sku in skus:
                 count = carts.get(sku.id)
-                if sku.stock < count:
-                    # 回滚点
-                    transaction.savepoint_rollback(point)
-                    return JsonResponse({'code': 400, 'msg':'商品数量不足！'})
+                for i in range(10):
+                    if sku.stock < count:
+                        # 回滚点
+                        transaction.savepoint_rollback(point)
+                        return JsonResponse({'code': 400, 'msg':'商品数量不足！'})
 
-                old_stock = sku.stock
+                    old_stock = sku.stock
 
-                sku.stock -= count
-                sku.sales += count
-                # 乐观锁，防止超卖
-                result = SKU.objects.filter(id=sku.id, stock=old_stock).update(stock=sku.stock, sales=sku.sales)
-                if not result:
-                    transaction.savepoint_rollback(point)
-                    return JsonResponse({'code':400, 'msg': '下单失败'})
+                    sku.stock -= count
+                    sku.sales += count
+                    # 乐观锁，防止超卖
+                    result = SKU.objects.filter(id=sku.id, stock=old_stock).update(stock=sku.stock, sales=sku.sales)
+                    if not result:
+                        time.sleep(0.01)
+                        continue
 
-                order_info.total_count += count
-                order_info.total_amount += (count * sku.price)
+                    order_info.total_count += count
+                    order_info.total_amount += (count * sku.price)
 
-                # 保留订单商品信息
-                OrderGoods.objects.create(
-                    order=order_info,
-                    sku=sku,
-                    count=count,
-                    price=sku.price,
-                )
+                    # 保留订单商品信息
+                    OrderGoods.objects.create(
+                        order=order_info,
+                        sku=sku,
+                        count=count,
+                        price=sku.price,
+                    )
+                    break
 
             order_info.total_amount += freight
             order_info.save()
