@@ -3,6 +3,11 @@
 # @Author  : 老冰棍
 # @File    : urls.py
 # @Software: PyCharm
-urlpatterns = [
+from django.urls import path
 
+from apps.payment.views import PayUrlView, PaymentStatusView
+
+urlpatterns = [
+    path('payments/status/', PaymentStatusView.as_view(), name='paymentStatus'),
+    path('payments/<order_id>/', PayUrlView.as_view(), name='payments'),
 ]

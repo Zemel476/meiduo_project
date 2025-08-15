@@ -274,3 +274,15 @@ HAYSTACK_SEARCH_RESULTS_PER_PAGE = 50
 CRONJOBS = [
     ('0/5 * * * *', 'apps.contents.crons.generic_meiduo_index', '>>'+ os.path.join(BASE_DIR, 'logs/crontab.log')),
 ]
+
+
+# 支付宝支付相关
+APP_PRIVATE_KEY = os.path.join(BASE_DIR, 'apps/payment/key/app_private_key.pem')
+ALIPAY_PUBLIC_KEY = os.path.join(BASE_DIR, 'apps/payment/key/alipay_public_key.pem')
+
+ALIPAY_APPID = '9021000151620985'
+ALIPAY_DEBUG = True
+ALIPAY_URL = 'https://openapi-sandbox.dl.alipaydev.com/gateway.do'
+ALIPAY_RETURN_URL = ''
+
+
