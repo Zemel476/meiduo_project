@@ -98,8 +98,22 @@ DATABASES = {
         'OPTIONS': {
             'isolation_level': 'read committed',
         }
+    },
+    'salve': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'meiduo_mall',
+        'USER': 'root',
+        'PASSWORD': '123456',
+        'HOST': '127.0.0.1',
+        'PORT': '4306',
+        'OPTIONS': {
+            'isolation_level': 'read committed',
+        }
     }
 }
+
+DATABASE_ROUTERS = ['utils.db_router.MasterSlaveDBRouter']
+
 
 # 配置 django-redis
 CACHES = {
